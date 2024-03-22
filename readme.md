@@ -5,7 +5,7 @@
 <h1 align="center">Transmissionner</h1>
 
 <p align="center">
-  Tranmission remote (RPC client) for macOS and iOS.
+  [Tranmission](https://github.com/transmission/transmission) remote (RPC client) for macOS and iOS.
 </p>
 
 <!-- <p align="center">
@@ -37,6 +37,6 @@
 - [x] Start/stop transfers
 - [x] Reorder transfers queue
 - [x] Get basic transfer statistics
-- [ ] Get detailed transfer infos
+- [ ] Get detailed transfer informations
 - [ ] Configure transfer
 - [ ] Configure global options
