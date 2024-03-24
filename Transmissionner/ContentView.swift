@@ -98,6 +98,11 @@ struct ContentView: View {
             
             DispatchQueue.main.async {
               let url = NSURL(absoluteURLWithDataRepresentation: urlData as! Data, relativeTo: nil) as URL
+              
+              if (url.pathExtension != "torrent") {
+                return
+              }
+              
               client.addTorrentFile(url: url)
             }
           }
