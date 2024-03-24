@@ -19,6 +19,7 @@ struct TransmissionnerToolbarContent: ToolbarContent {
   
   public var onStart: (() -> Void)?
   public var onStop: (() -> Void)?
+  public var onAdd: (() -> Void)?
 
   private var connectionID: Binding<Int> {
     Binding(
@@ -131,7 +132,7 @@ struct TransmissionnerToolbarContent: ToolbarContent {
       
       ToolbarItem(placement: .principal) {
         Button(action: {
-      
+          onAdd?()
         }, label: {
           Image(systemName: "plus")
         })

@@ -7,11 +7,13 @@
 
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct ContentView: View {
   @Environment(\.modelContext) private var modelContext
   @State private var connection: Connection?
   @ObservedObject private var client: Client = Client()
+  @State private var importing: Bool = false
   
   func initializeClient() {
     client.set(connection: connection)
@@ -23,6 +25,10 @@ struct ContentView: View {
   
   func onToolbarStop() {
     client.torrents.stop()
+  }
+  
+  func onToolbarAdd() {
+    importing = true
   }
 
   var body: some View {
@@ -40,9 +46,32 @@ struct ContentView: View {
             canStart: client.canStartAll,
             canStop: client.canStopAll,
             onStart: onToolbarStart,
-            onStop: onToolbarStop
+            onStop: onToolbarStop,
+            onAdd: onToolbarAdd
           )
         }
+      }
+      .fileImporter(
+         isPresented: $importing,
+         allowedContentTypes: [UTType.init(filenameExtension: "torrent")!],
+         allowsMultipleSelection: true
+       ) { result in
+         switch result {
+           case .success(let files):
+             files.forEach { url in
+               let gotAccess = url.startAccessingSecurityScopedResource()
+               if !gotAccess { return }
+               
+               DispatchQueue.main.async {
+                 client.addTorrentFile(url: url)
+               }
+               
+               url.stopAccessingSecurityScopedResource()
+             }
+           
+           case .failure(let error):
+             print(error)
+         }
       }
       .onChange(of: connection) { oldValue, newValue in
         initializeClient()
