@@ -5,7 +5,7 @@
 <h1 align="center">Transmissionner</h1>
 
 <p align="center">
-  <a href="https://github.com/transmission/transmission">Tranmission</a> remote (RPC client) for macOS and iOS.
+  <a href="https://github.com/transmission/transmission">Transmission</a> remote (RPC client) for macOS and iOS.
 </p>
 
 <!-- <p align="center">
