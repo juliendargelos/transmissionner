@@ -19,13 +19,7 @@
 </p>
 
 <p align="center">
-  <video
-    muted
-    loop
-    autoplay
-    playsinline
-    src="https://github.com/juliendargelos/transmissionner/assets/3743321/20bc93dc-c6d0-482c-9ec9-8a45e53ec919"
-  ></video>
+  <img width="1221" alt="Screenshot 2025-03-16 at 21 40 56" src="https://github.com/user-attachments/assets/f3319da7-f554-4dcc-ae7d-b286b83b5e5a"/>
 </p>
 
 ## Features
@@ -37,6 +31,19 @@
 - [x] Start/stop transfers
 - [x] Reorder transfers queue
 - [x] Get basic transfer statistics
-- [ ] Get detailed transfer informations
-- [ ] Configure transfer
-- [ ] Configure global options
+- [ ] Get detailed transfer informations (wip)
+- [ ] Configure transfer (wip)
+- [ ] Configure global options (wip)
+
+<details>
+  <summary>Video demo</summary>
+  <p align="center">
+    <video
+      muted
+      loop
+      autoplay
+      playsinline
+      src="https://github.com/juliendargelos/transmissionner/assets/3743321/20bc93dc-c6d0-482c-9ec9-8a45e53ec919"
+    ></video>
+  </p>
+</details>
