@@ -27,6 +27,10 @@ class Client: ObservableObject {
     self.torrents.onTorrentStart = self.onTorrentListStart
     self.torrents.onTorrentStop = self.onTorrentListStop
     self.torrents.onTorrentRemove = self.onTorrentListRemove
+    self.torrents.onTorrentPost = self.onTorrentListPost
+    
+    self.preferences.onPost = self.onPreferencesPost
+    self.preferences.onFetch = self.onPreferencesFetch
   }
   
   var scheme: String {
@@ -77,38 +81,70 @@ class Client: ObservableObject {
     }
   }
   
-  func set(connection: Connection?) {
+  func enableSync() {
     if updateTimer != nil {
-      updateTimer!.invalidate()
+      return
+    }
+    
+    if (connection == nil) {
+      return
+    }
+    
+    updating = true
+    fetchTorrents { self.updating = false }
+    
+    updateTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(connection!.updateInterval), repeats: true) { timer in
+      if self.connection == nil {
+        self.disconnect()
+        return
+      }
+      
+      if self.updating {
+        return
+      }
+      
+      var loading = 2
+      
+      let complete = {
+        loading -= 1
+        if loading <= 0 {
+          self.updating = false
+        }
+      }
+
+      self.updating = true
+      self.fetchTorrents(complete)
+      self.fetchPreferences(complete)
+    }
+  }
+  
+  func disableSync() {
+    if updateTimer == nil {
+      return
+    }
+    
+    updateTimer!.invalidate()
+    updateTimer = nil
+  }
+  
+  func disconnect() {
+    disableSync()
+    connection = nil
+    sessionId = ""
+    canStartAll = false
+    canStopAll = false
+    torrents.clear()
+  }
+  
+  func set(connection: Connection?) {
+    self.disconnect()
+    
+    if (connection == nil) {
+      return
     }
     
     self.connection = connection
-    self.sessionId = ""
-    self.canStartAll = false
-    self.canStopAll = false
-    self.torrents.clear()
-    
-    if (connection != nil) {
-      self.updating = true
-      self.fetchTorrents { self.updating = false }
-      
-      updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-        if self.connection == nil {
-          self.updateTimer!.invalidate()
-          self.updateTimer = nil
-          self.sessionId = ""
-          self.torrents.clear()
-          return
-        }
-        
-        if self.updating {
-          return
-        }
-        
-        self.updating = true
-        self.fetchTorrents { self.updating = false }
-      }
-    }
+    self.enableSync()
   }
   
   func fetch(_ complete: (() -> Void)? = nil) {
@@ -171,7 +207,20 @@ class Client: ObservableObject {
           "queuePosition",
           "downloadDir",
           "uploadRatio",
-          "files"
+          "files",
+          
+          "wanted",
+          "priorities",
+          "peer-limit",
+          "downloadLimit",
+          "downloadLimited",
+          "uploadLimit",
+          "uploadLimited",
+          "honorsSessionLimits",
+          "seedIdleLimit",
+          "seedIdleMode",
+          "seedRatioLimit",
+          "seedRatioMode"
         ]
       ],
       complete: { data, response, error in
@@ -201,7 +250,25 @@ class Client: ObservableObject {
   func fetchPreferences(_ complete: (() -> Void)? = nil) {
     post(
       method: "session-get",
-      arguments: nil,
+      arguments: [
+        "fields": [
+          "download-dir",
+          "incomplete-dir",
+          "incomplete-dir-enabled",
+          "rename-partial-files",
+          "peer-limit-global",
+          "peer-limit-per-torrent",
+          "speed-limit-down-enabled",
+          "speed-limit-down",
+          "speed-limit-up-enabled",
+          "speed-limit-up",
+          "alt-speed-down",
+          "alt-speed-up",
+          "alt-speed-enabled",
+          "download-queue-size",
+          "download-queue-enabled"
+        ]
+      ],
       complete: { data, response, error in
         if (error != nil) {
           print("Error: \(error!)")
@@ -223,6 +290,32 @@ class Client: ObservableObject {
         let arguments = json["arguments"] as! [String: Any]
                 
         self.preferences.update(preferences: arguments)
+        complete?()
+      }
+    )
+  }
+  
+  func postPreferences(_ complete: (() -> Void)? = nil) {
+    post(
+      method: "session-set",
+      arguments: [
+        "download-dir": preferences.downloadDir,
+        "incomplete-dir": preferences.incompleteDir,
+        "incomplete-dir-enabled": preferences.incompleteDirEnabled,
+        "rename-partial-files": preferences.renamePartialFiles,
+        "peer-limit-global": preferences.peerLimitGlobal,
+        "peer-limit-per-torrent": preferences.peerLimitPerTorrent,
+        "speed-limit-down-enabled": preferences.speedLimitDownEnabled,
+        "speed-limit-down": preferences.speedLimitDown,
+        "speed-limit-up-enabled": preferences.speedLimitUpEnabled,
+        "speed-limit-up": preferences.speedLimitUp,
+        "alt-speed-down": preferences.altSpeedDown,
+        "alt-speed-up": preferences.altSpeedUp,
+        "alt-speed-enabled": preferences.altSpeedEnabled,
+        "download-queue-size": preferences.downloadQueueSize,
+        "download-queue-enabled": preferences.downloadQueueEnabled
+      ],
+      complete: { data, response, error in
         complete?()
       }
     )
@@ -279,7 +372,7 @@ class Client: ObservableObject {
   }
   
   private func onTorrentListReorder() {
-    for (index, torrent) in torrents.items.enumerated() {
+    for (_, torrent) in torrents.items.enumerated() {
       post(
         method: "torrent-set",
         arguments: [
@@ -322,6 +415,77 @@ class Client: ObservableObject {
     )
   }
   
+  private func onTorrentListPost(torrent: Torrent, complete: (() -> Void)? = nil) {
+    var priorityLow: [Int] = []
+    var priorityNormal: [Int] = []
+    var priorityHigh: [Int] = []
+    var filesWanted: [Int] = []
+    var filesUnwanted: [Int] = []
+    
+    var index = 0
+    
+    for file in torrent.files.items {
+      switch file.priority {
+        case .low:
+          priorityLow.append(index)
+          
+        case .normal:
+          priorityNormal.append(index)
+        
+        case .high:
+          priorityHigh.append(index)
+      }
+      
+      file.wanted ? filesWanted.append(index) : filesUnwanted.append(index)
+      
+      index += 1
+    }
+    
+    print([
+      "ids": torrent.id,
+      "peer-limit": torrent.peerLimit,
+      "downloadLimit": torrent.downloadLimit,
+      "downloadLimited": torrent.downloadLimited,
+      "uploadLimit": torrent.uploadLimit,
+      "uploadLimited": torrent.uploadLimited,
+      "honorsSessionLimits": torrent.honorsSessionLimits,
+      "seedIdleLimit": torrent.seedIdleLimit,
+      "seedIdleMode": torrent.seedIdleMode,
+      "seedRatioLimit": torrent.seedRatioLimit,
+      "seedRatioMode": torrent.seedRatioMode,
+      "priority-low": priorityLow,
+      "priority-normal": priorityNormal,
+      "priority-high": priorityHigh,
+      "files-wanted": filesWanted,
+      "files-unwanted": filesUnwanted
+    ])
+    
+    post(
+      method: "torrent-set",
+      arguments: [
+        "ids": torrent.id,
+        "peer-limit": torrent.peerLimit,
+        "downloadLimit": torrent.downloadLimit,
+        "downloadLimited": torrent.downloadLimited,
+        "uploadLimit": torrent.uploadLimit,
+        "uploadLimited": torrent.uploadLimited,
+        "honorsSessionLimits": torrent.honorsSessionLimits,
+        "seedIdleLimit": torrent.seedIdleLimit,
+        "seedIdleMode": torrent.seedIdleMode.rawValue,
+        "seedRatioLimit": torrent.seedRatioLimit,
+        "seedRatioMode": torrent.seedRatioMode.rawValue,
+        "priority-low": priorityLow,
+        "priority-normal": priorityNormal,
+        "priority-high": priorityHigh,
+        "files-wanted": filesWanted,
+        "files-unwanted": filesUnwanted
+      ],
+      complete: { data, response, error in
+        complete?()
+      }
+    )
+  }
+  
   private func onTorrentListStartAll() {
     if (torrents.items.count == 0) {
       return
@@ -352,5 +516,13 @@ class Client: ObservableObject {
         "ids": torrents.items.map({ torrent in torrent.id })
       ]
     )
+  }
+  
+  private func onPreferencesPost(_ complete: (() -> Void)? = nil) {
+    postPreferences(complete)
+  }
+  
+  private func onPreferencesFetch(_ complete: (() -> Void)? = nil) {
+    fetchPreferences(complete)
   }
 }

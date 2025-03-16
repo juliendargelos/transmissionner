@@ -9,9 +9,11 @@ import SwiftUI
 
 struct TorrentListView: View {
   @ObservedObject public var torrents: TorrentList
-  @State private var selection: Int?
+  @State public var selection: Int?
   @State private var isDeleting: Bool = false
   @State private var deletingTorrent: Torrent?
+  
+  public var onSelect: ((_ torrent: Torrent?) -> Void)? = nil
   
   var body: some View {
     let list = List(selection: $selection) {
@@ -20,6 +22,13 @@ struct TorrentListView: View {
           torrent: torrent,
           selected: selection == torrent.id
         )
+        .onChange(of: selection) { oldValue, newValue in
+          let torrent = newValue == nil ? nil : torrents.items.first(where: { torrent in
+            torrent.id == newValue
+          })
+          
+           onSelect?(torrent)
+        }
           .padding(.horizontal, 15)
           .padding(.vertical, 10)
           .background(selection == torrent.id ? Color.accentColor : nil)

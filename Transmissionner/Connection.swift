@@ -16,6 +16,7 @@ class Connection {
   var path: String
   var ssl: Bool
   var lastUsed: Date
+  var updateInterval: Int
   @Attribute(.allowsCloudEncryption) var username: String?
   @Attribute(.allowsCloudEncryption) var password: String?
   
@@ -26,7 +27,8 @@ class Connection {
     path: String = Connection.defaultPath,
     ssl: Bool = false,
     username: String? = nil,
-    password: String? = nil
+    password: String? = nil,
+    updateInterval: Int = Connection.defaultUpdateInterval
   ) {
     self.name = name
     self.hostname = hostname
@@ -35,6 +37,7 @@ class Connection {
     self.ssl = ssl
     self.username = username
     self.password = password
+    self.updateInterval = updateInterval
     self.lastUsed = Date()
   }
   
@@ -44,4 +47,7 @@ class Connection {
   
   static let defaultPort: Int = 9091
   static let defaultPath: String = "/transmission/rpc"
+  static let defaultUpdateInterval: Int = 1
+  
+  static let updateIntervalRange: ClosedRange<Int> = 1...60
 }

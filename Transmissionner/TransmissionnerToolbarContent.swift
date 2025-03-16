@@ -12,7 +12,14 @@ struct TransmissionnerToolbarContent: ToolbarContent {
   @Environment(\.modelContext) private var modelContext
   @Query(sort: \Connection.lastUsed, order: .reverse) private var connections: [Connection]
   @Binding public var connection: Connection?
-  @State private var editingConnection: Bool = false
+  @ObservedObject public var preferences: Preferences
+  @Binding public var inspectorSelection: String?
+  @State private var editingConnection: Bool = false {
+    didSet {
+      editingConnection ? onEditStart?() : onEditEnd?()
+    }
+  }
+  
   
   public var canStart: Bool = false
   public var canStop: Bool = false
@@ -20,6 +27,9 @@ struct TransmissionnerToolbarContent: ToolbarContent {
   public var onStart: (() -> Void)?
   public var onStop: (() -> Void)?
   public var onAdd: (() -> Void)?
+  public var onEditStart: (() -> Void)?
+  public var onEditEnd: (() -> Void)?
+  public var onToggleAlternativeLimits: (() -> Void)?
 
   private var connectionID: Binding<Int> {
     Binding(
@@ -53,7 +63,7 @@ struct TransmissionnerToolbarContent: ToolbarContent {
       .interactiveDismissDisabled(connections.count == 0)
 
     return Group {
-      ToolbarItem(placement: connectionPickerPlacement) {
+      ToolbarItemGroup(placement: connectionPickerPlacement) {
         Picker(selection: connectionID, content: {
           ForEach(connections) { connection in
             Text(connection.name == "" ? connection.hostname : connection.name).tag(connection.id.hashValue)
@@ -98,43 +108,38 @@ struct TransmissionnerToolbarContent: ToolbarContent {
       
       if connection != nil {
         ToolbarItem(placement: connectionPickerPlacement) {
-          Button(action: {
+          Button("", systemImage: "externaldrive.connected.to.line.below", action: {
             editingConnection = true
-          }, label: {
-            Image(systemName: "externaldrive.connected.to.line.below")
           })
         }
       }
       
-      ToolbarItem(placement: .principal) {
-        Button(action: {
+      ToolbarItemGroup(placement: .principal) {
+        Button("Resume all", systemImage: "arrow.clockwise.circle.fill", action: {
           onStart?()
-        }, label: {
-          Image(systemName: "arrow.clockwise.circle")
         })
         .disabled(!canStart)
-      }
-      
-      ToolbarItem(placement: .principal) {
-        Button(action: {
+        
+        Button("Pause all", systemImage: "pause.circle.fill", action: {
           onStop?()
-        }, label: {
-          Image(systemName: "pause.circle")
         })
         .disabled(!canStop)
       }
       
-      ToolbarItem(placement: .principal) {
-        HStack {
-          Divider()
+      ToolbarItemGroup(placement: .principal) {
+        Button {
+          onToggleAlternativeLimits?()
+        } label: {
+          Image(systemName: "tortoise.circle.fill")
+            .foregroundColor(preferences.altSpeedEnabled ? .accentColor : .secondary)
         }
+      } label: {
+        Text("Alternative limits")
       }
       
       ToolbarItem(placement: .principal) {
-        Button(action: {
+        Button("Add torrents", systemImage: "plus", action: {
           onAdd?()
-        }, label: {
-          Image(systemName: "plus")
         })
       }
       
@@ -142,21 +147,24 @@ struct TransmissionnerToolbarContent: ToolbarContent {
         Spacer()
       }
       
-      ToolbarItem(placement: .primaryAction) {
-        Button(action: {
-      
-        }, label: {
-          Image(systemName: "gearshape")
-        })
-      }
-      
-      ToolbarItem(placement: .primaryAction) {
-        Button(action: {
-      
-        }, label: {
-          Image(systemName: "info.circle")
-        })
+      ToolbarItemGroup(placement: .primaryAction) {
+        Picker(selection: $inspectorSelection, label: Text("Inspector")) {
+          Button("Preferences", systemImage: "gearshape", action: {}).tag("preferences")
+            .buttonStyle(.plain)
+          Button("Torrent details", systemImage: "info.circle", action: {}).tag("torrent")
+            .buttonStyle(.plain)
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented)
+      } label: {
+        Text("Inspector")
       }
     }
   }
+}
+
+#Preview {
+  ContentView()
+    .modelContainer(for: Connection.self, inMemory: true)
+    .frame(width:800)
 }

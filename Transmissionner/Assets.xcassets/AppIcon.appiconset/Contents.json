@@ -1,12 +1,6 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon 258.png",
-      "idiom" : "universal",
-      "platform" : "ios",
-      "size" : "1024x1024"
-    },
-    {
       "filename" : "AppIcon 16.png",
       "idiom" : "mac",
       "scale" : "1x",

@@ -15,12 +15,16 @@ class TorrentFileList: ObservableObject {
     self.items = items
   }
   
-  func update(items: [[String: Any]]) {
+  func update(items: [[String: Any]], in torrent: [String: Any]? = nil) {
     self.items.removeAll()
+    var index = 0
     
     for file in items {
       let newFile = TorrentFile()
-      newFile.update(file: file)
+      torrent == nil
+        ? newFile.update(file: file)
+        : newFile.update(file: file, at: index, in: torrent!)
+      
       self.items.append(newFile)
     }
   }

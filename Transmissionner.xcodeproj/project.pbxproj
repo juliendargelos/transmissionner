@@ -27,6 +27,9 @@
 		F95AF9FB2BA25154009177E4 /* TransmissionnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95AF9FA2BA25154009177E4 /* TransmissionnerTests.swift */; };
 		F95AFA052BA25154009177E4 /* TransmissionnerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95AFA042BA25154009177E4 /* TransmissionnerUITests.swift */; };
 		F95AFA072BA25154009177E4 /* TransmissionnerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95AFA062BA25154009177E4 /* TransmissionnerUITestsLaunchTests.swift */; };
+		F9F1E51D2CA7FE4600F0DCB7 /* SuffixedNumberFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9F1E51C2CA7FE3A00F0DCB7 /* SuffixedNumberFormatter.swift */; };
+		F9F907EE2D85B87E0073375E /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9F907ED2D85B8770073375E /* PreferencesView.swift */; };
+		F9F907F02D86F87C0073375E /* TorrentDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9F907EF2D86F8760073375E /* TorrentDetailsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +74,9 @@
 		F95AFA002BA25154009177E4 /* TransmissionnerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TransmissionnerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F95AFA042BA25154009177E4 /* TransmissionnerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransmissionnerUITests.swift; sourceTree = "<group>"; };
 		F95AFA062BA25154009177E4 /* TransmissionnerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransmissionnerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		F9F1E51C2CA7FE3A00F0DCB7 /* SuffixedNumberFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuffixedNumberFormatter.swift; sourceTree = "<group>"; };
+		F9F907ED2D85B8770073375E /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		F9F907EF2D86F8760073375E /* TorrentDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorrentDetailsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,11 +127,14 @@
 		F95AF9E52BA25153009177E4 /* Transmissionner */ = {
 			isa = PBXGroup;
 			children = (
+				F9F1E51C2CA7FE3A00F0DCB7 /* SuffixedNumberFormatter.swift */,
 				F95AF9E62BA25153009177E4 /* TransmissionnerApp.swift */,
 				F95AF9E82BA25153009177E4 /* ContentView.swift */,
 				F936C2CA2BA8D682007EE5B1 /* TorrentListView.swift */,
 				F936C2CC2BA8D92C007EE5B1 /* TorrentView.swift */,
+				F9F907EF2D86F8760073375E /* TorrentDetailsView.swift */,
 				F936C2C82BA78129007EE5B1 /* ConnectionView.swift */,
+				F9F907ED2D85B8770073375E /* PreferencesView.swift */,
 				F936C2D02BA8DC2E007EE5B1 /* TransferStatsView.swift */,
 				F936C2C62BA7797F007EE5B1 /* TransmissionnerToolbarContent.swift */,
 				F95AF9EC2BA25154009177E4 /* Assets.xcassets */,
@@ -300,12 +309,15 @@
 			files = (
 				F936C2D12BA8DC2E007EE5B1 /* TransferStatsView.swift in Sources */,
 				F95AF9E92BA25153009177E4 /* ContentView.swift in Sources */,
+				F9F907EE2D85B87E0073375E /* PreferencesView.swift in Sources */,
 				F936C2CF2BA8DBE2007EE5B1 /* utils.swift in Sources */,
 				F936C2CB2BA8D682007EE5B1 /* TorrentListView.swift in Sources */,
+				F9F1E51D2CA7FE4600F0DCB7 /* SuffixedNumberFormatter.swift in Sources */,
 				F936C2C12BA76214007EE5B1 /* Preferences.swift in Sources */,
 				F936C2CD2BA8D92C007EE5B1 /* TorrentView.swift in Sources */,
 				F936C2C92BA78129007EE5B1 /* ConnectionView.swift in Sources */,
 				F936C2BD2BA75C87007EE5B1 /* TorrentFile.swift in Sources */,
+				F9F907F02D86F87C0073375E /* TorrentDetailsView.swift in Sources */,
 				F936C2BB2BA75A47007EE5B1 /* Torrent.swift in Sources */,
 				F936C2B92BA257BF007EE5B1 /* Client.swift in Sources */,
 				F936C2BF2BA75E72007EE5B1 /* TorrentList.swift in Sources */,
@@ -466,7 +478,6 @@
 		F95AFA0B2BA25154009177E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Transmissionner/Transmissionner.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -476,6 +487,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -489,7 +501,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = juliendargelos.Transmissionner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -504,7 +516,6 @@
 		F95AFA0C2BA25154009177E4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Transmissionner/Transmissionner.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -514,6 +525,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -527,7 +539,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.3;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = juliendargelos.Transmissionner;
 				PRODUCT_NAME = "$(TARGET_NAME)";

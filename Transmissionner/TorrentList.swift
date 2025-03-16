@@ -17,6 +17,7 @@ class TorrentList: ObservableObject {
   public var onTorrentStart: ((_: Int) -> Void)? = nil
   public var onTorrentStop: ((_: Int) -> Void)? = nil
   public var onTorrentRemove: ((_: Int, _: Bool) -> Void)? = nil
+  public var onTorrentPost: ((_: Torrent, _:(() -> Void)?) -> Void)? = nil
   
   init(
     items: [Torrent] = []
@@ -37,12 +38,18 @@ class TorrentList: ObservableObject {
           self.remove(torrent: newTorrent)
           self.onTorrentRemove?(newTorrent.id, deleteFiles)
         }
+        
+        newTorrent.onPost = { complete in
+          self.onTorrentPost?(newTorrent, complete)
+        }
+        
         newTorrent.update(torrent: torrent)
         self.items.append(newTorrent)
       }
     }
     
     self.items = self.items.filter { torrent in items.contains { candidate in candidate["id"] as! Int == torrent.id } }
+    sort()
   }
   
   func clear() {
@@ -77,6 +84,8 @@ class TorrentList: ObservableObject {
         torrent.queuePosition = i
       }
     }
+    
+    sort()
     
     if changed {
       onReorder?()

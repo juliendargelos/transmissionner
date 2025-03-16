@@ -13,10 +13,13 @@ struct ConnectionView: View {
   @State private var hostname: String = ""
   @State private var port: Int = Connection.defaultPort
   @State private var path: String = Connection.defaultPath
+  @State private var updateInterval: Int = Connection.defaultUpdateInterval
   @State private var ssl: Bool = false
   @State private var username: String = ""
   @State private var password: String = ""
   @State private var authentication: Bool = false
+  @State private var confirmation: Bool = false
+  @State private var confirmationMessages: [String] = []
   
   @Binding public var connection: Connection?
   public var onSave: (() -> Void)?
@@ -52,6 +55,29 @@ struct ConnectionView: View {
     )
   }
   
+  private var edited: Binding<Bool> {
+    Binding(
+      get: {
+        if (connection == nil) {
+          return true
+        }
+        
+        return (
+          connection!.name != name ||
+          connection!.hostname != hostname ||
+          connection!.port != port ||
+          connection!.path != path ||
+          connection!.ssl != ssl ||
+          connection!.username ?? "" != username ||
+          connection!.password ?? "" != password ||
+          connection!.updateInterval != updateInterval ||
+          authentication != (connection!.username != nil)
+        )
+      },
+      set: { _ in }
+    )
+  }
+  
   private static let portFormatter: NumberFormatter = {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
@@ -79,6 +105,36 @@ struct ConnectionView: View {
       password = ""
       authentication = false
     }
+  }
+  
+  func save() {
+    if connection == nil {
+      connection = Connection(
+        name: name,
+        hostname: hostname,
+        port: port,
+        path: path,
+        ssl: ssl,
+        username: authentication ? username : nil,
+        password: authentication ? password : nil,
+        updateInterval: updateInterval
+      )
+      
+      modelContext.insert(connection!)
+    } else {
+      connection!.name = name
+      connection!.hostname = hostname
+      connection!.port = port
+      connection!.path = path
+      connection!.ssl = ssl
+      connection!.username = authentication ? username : nil
+      connection!.password = authentication ? password : nil
+      connection!.updateInterval = updateInterval
+      
+      try? modelContext.save()
+    }
+    
+    onSave?()
   }
   
   var body: some View {
@@ -142,6 +198,16 @@ struct ConnectionView: View {
 #endif
         }
         
+        LabeledContent("Update interval") {
+          TextField(
+            value: $updateInterval, formatter: NumberFormatter.integer(in: Connection.updateIntervalRange, unit: "s"), label: { })
+          .textFieldStyle(textFieldStyle)
+          .labelsHidden()
+          Spacer(minLength: 5)
+          Stepper(value: $updateInterval, in: Connection.updateIntervalRange, step: 1, label: { })
+            .labelsHidden()
+        }
+        
         LabeledContent("Use SSL") {
           Toggle(isOn: $ssl, label: { })
         }
@@ -175,7 +241,7 @@ struct ConnectionView: View {
     .navigationTitle(connection == nil ? "New connection" : "Edit connection")
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
-        Button("Cancel") {
+        Button("Cancel", role: .cancel) {
           onCancel!()
         }
         .disabled(onCancel == nil)
@@ -183,7 +249,7 @@ struct ConnectionView: View {
         
       if connection != nil {
         ToolbarItem(placement: .destructiveAction) {
-          Button("Delete") {
+          Button("Delete", role: .destructive) {
             if connection != nil {
               modelContext.delete(connection!)
               try? modelContext.save()
@@ -193,42 +259,40 @@ struct ConnectionView: View {
             reset()
             onCancel!()
           }
+          .foregroundStyle(.red)
         }
       }
       
       ToolbarItem(placement: .primaryAction) {
         Button("Save") {
-          if connection == nil {
-            connection = Connection(
-              name: name,
-              hostname: hostname,
-              port: port,
-              path: path,
-              ssl: ssl,
-              username: authentication ? username : nil,
-              password: authentication ? password : nil
-            )
-            
-            modelContext.insert(connection!)
-          } else {
-            connection!.name = name
-            connection!.hostname = hostname
-            connection!.port = port
-            connection!.path = path
-            connection!.ssl = ssl
-            connection!.username = authentication ? username : nil
-            connection!.password = authentication ? password : nil
+          confirmationMessages.removeAll()
+          
+          if (!ssl && authentication) {
+            confirmationMessages.append("The provided credentials will be sent without encryption, it is recommended to authenticate through SSL.")
           }
           
-          try? modelContext.save()
-          onSave?()
+          if (confirmationMessages.count != 0) {
+            confirmation = true
+          } else {
+            save()
+          }
         }
-        .disabled(!valid.wrappedValue)
+        .disabled(!valid.wrappedValue || !edited.wrappedValue)
       }
     }
     .onAppear {
       reset()
     }
+    .confirmationDialog("Warning", isPresented: $confirmation) {
+        Button("Edit configuration", role: .cancel) {
+          confirmation = false
+        }
+        Button("Save anyway", role: .destructive) {
+          save()
+        }
+      } message: {
+        Text(confirmationMessages.joined(separator: "\n—\n"))
+      }
   }
 }
 
