@@ -8,14 +8,14 @@
   <a href="https://github.com/transmission/transmission">Transmission</a> remote (RPC client) for macOS and iOS.
 </p>
 
-<!-- <p align="center">
-  <a href="https://github.com/juliendargelos/transmissionner/releases/latest/download/Transmissionner.app.zip">
-    Download latest release
-  </a>
-</p> -->
-
 <p align="center">
-  First release coming soon
+  <a href="https://github.com/juliendargelos/transmissionner/releases/download/v1.0-alpha/Transmissionner.app.zip">
+    Download latest release (alpha)
+  </a>
+
+  <!-- <a href="https://github.com/juliendargelos/transmissionner/releases/latest/download/Transmissionner.app.zip">
+    Download latest release
+  </a> -->
 </p>
 
 <p align="center">
